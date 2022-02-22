@@ -1,0 +1,5 @@
+name: MetalsModule
+main: fly.metals.MetalsPlugin
+version: Beta-1.0
+api-version: 1.13
+depend: [Mods]
