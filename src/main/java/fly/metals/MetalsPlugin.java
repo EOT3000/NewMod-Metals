@@ -18,6 +18,16 @@ import java.util.Random;
 public class MetalsPlugin extends NewMod.ModExtension {
     private Random random = new Random();
 
+    private static MetalsPlugin INSTANCE;
+
+    public MetalsPlugin() {
+        INSTANCE = this;
+    }
+
+    public static MetalsPlugin get() {
+        return INSTANCE;
+    }
+
     @Override
     public void load() {
         MetalsAddonSetup.init();
@@ -33,7 +43,7 @@ public class MetalsPlugin extends NewMod.ModExtension {
             for (int x = 0; x < 54; x++) {
                 double r = random.nextDouble();
 
-                for (ItemStack stack : MetalsAddonSetup.oreMap.get(block.getType()).keySet()) {
+                /*for (ItemStack stack : MetalsAddonSetup.oreMap.get(block.getType()).keySet()) {
                     double probability = MetalsAddonSetup.oreMap.get(block.getType()).get(stack);
 
                     if (r < probability) {
@@ -43,7 +53,7 @@ public class MetalsPlugin extends NewMod.ModExtension {
                     } else {
                         r -= probability;
                     }
-                }
+                }*/
             }
         }
     }

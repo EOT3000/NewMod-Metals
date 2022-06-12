@@ -2,11 +2,14 @@ package fly.metals.impl.items;
 
 import fly.metals.MetalsPlugin;
 import fly.metals.impl.MetalTextures;
+import fly.metals.impl.items.meta.FilledOreSpongeMeta;
 import fly.metals.setup.MetalsAddonSetup;
 import fly.newmod.NewMod;
-import fly.newmod.bases.ModItem;
+import fly.newmod.api.block.BlockManager;
+import fly.newmod.api.item.ItemManager;
+import fly.newmod.api.item.ModItemStack;
+import fly.newmod.api.item.type.ModItemType;
 import fly.newmod.bases.textures.Texture;
-import fly.newmod.bases.textures.TexturedModItem;
 import fly.newmod.setup.BlockStorage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -15,7 +18,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Dropper;
-import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
@@ -23,62 +25,46 @@ import org.bukkit.inventory.*;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.bukkit.Material.PLAYER_HEAD;
 
-public class FilledOreSponge extends ModItem implements TexturedModItem {
-    private final static Map<Material, FilledOreSponge> VARIANTS = new HashMap<>();
-    private final Material ore;
+public class FilledOreSponge extends ModItemType {
+    private final static Map<Material, String> VARIANTS = new HashMap<>();
 
     public FilledOreSponge() {
-        super(PLAYER_HEAD, "Filled Ore Sponge", 0x7d5e36, "filled_ore_sponge");
+        super(PLAYER_HEAD, new NamespacedKey(MetalsPlugin.get(), "filled_ore_sponge"), FilledOreSpongeMeta.class);
 
-        this.ore = null;
-
+        name("Filled Ore Sponge", 0x7d5e36);
         Bukkit.getPluginManager().registerEvents(new SpongeListener(), NewMod.get());
     }
 
-    private FilledOreSponge(Material ore, String name) {
-        super(PLAYER_HEAD, "Filled Ore Sponge", 0x7d5e36, "filled_ore_sponge_" + ore.name().toLowerCase());
+    public void addVariant(Material ore, String name) {
+        VARIANTS.put(ore, name);
 
-        lore(Collections.singletonList(Component.text(name).color(TextColor.color(0x808080))));
-
-        VARIANTS.put(ore, this);
-
-        ItemStack stack = new ItemStack(this);
+        ItemStack stack = new ModItemStack(this).create();
 
         stack.setAmount(8);
 
-        ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(MetalsPlugin.getPlugin(MetalsPlugin.class), getId()), stack);
+        @SuppressWarnings("deprecation")
+        ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(getId().getNamespace(), getId().getKey() + "_" + ore.name().toLowerCase()), stack);
 
         shapedRecipe.shape("AAA", "ABA", "AAA");
 
-        shapedRecipe.setIngredient('A', MetalsAddonSetup.ORE_SPONGE);
+        shapedRecipe.setIngredient('A', new ModItemStack(MetalsAddonSetup.ORE_SPONGE).create());
         shapedRecipe.setIngredient('B', new ItemStack(ore));
 
-        addRecipe(shapedRecipe);
+        Bukkit.addRecipe(shapedRecipe);
 
-        NamespacedKey nk = new NamespacedKey(MetalsPlugin.getPlugin(MetalsPlugin.class), getId() + "_furnace");
+        @SuppressWarnings("deprecation")
+        NamespacedKey nk = new NamespacedKey(getId().getNamespace(), getId().getKey() + "_" + ore.name().toLowerCase() + "_furnace");
 
-        BlastingRecipe furnaceRecipe = new BlastingRecipe(nk, MetalsAddonSetup.HARD_CARBON_CHUNK, new RecipeChoice.ExactChoice(this), 2.0f, 600);
+        BlastingRecipe furnaceRecipe = new BlastingRecipe(nk, new ModItemStack(MetalsAddonSetup.HARD_CARBON_CHUNK).create(), new RecipeChoice.ExactChoice(new ModItemStack(this).create()), 2.0f, 600);
 
-        addRecipe(furnaceRecipe);
-
-        this.ore = ore;
+        Bukkit.addRecipe(furnaceRecipe);
     }
 
-    @Override
-    public Texture getTexture() {
-        return MetalTextures.FILLED_ORE_SPONGE;
-    }
-
-    public FilledOreSponge addVariant(Material ore, String name) {
-        return new FilledOreSponge(ore, name);
-    }
-
-    public static FilledOreSponge getVariant(Material ore) {
+    public static String getVariantName(Material ore) {
         return VARIANTS.get(ore);
     }
 
@@ -86,13 +72,14 @@ public class FilledOreSponge extends ModItem implements TexturedModItem {
         @EventHandler
         public void onFurnaceSmelt(FurnaceSmeltEvent event) {
             Location l = event.getBlock().getLocation().add(0, -1, 0);
-            BlockStorage bs = NewMod.get().getBlockStorage();
+            BlockManager bs = NewMod.get().getBlockManager();
+            ItemManager is = NewMod.get().getItemManager();
 
-            if (event.getResult().equals(MetalsAddonSetup.HARD_CARBON_CHUNK) && bs.getData(l, "id").equals("collector")) {
-                String id = BlockStorage.getID(((RecipeChoice.ExactChoice) event.getRecipe().getInputChoice()).getItemStack());
-                FilledOreSponge sponge = (FilledOreSponge) bs.getItems().get(id);
+            if (is.getType(event.getResult()).equals(MetalsAddonSetup.HARD_CARBON_CHUNK) && bs.getData(l, "id").equals("collector")) {
+                ModItemStack stack = new ModItemStack(((RecipeChoice.ExactChoice) event.getRecipe().getInputChoice()).getItemStack());
+                FilledOreSpongeMeta sponge = (FilledOreSpongeMeta) stack.getMeta();
 
-                ItemStack item = MetalsAddonSetup.refine(sponge.ore);
+                ItemStack item = MetalsAddonSetup.refine(sponge.getMaterial());
 
                 Dropper dropper = (Dropper) l.getBlock().getState();
 

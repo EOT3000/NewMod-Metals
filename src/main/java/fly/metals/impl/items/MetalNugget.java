@@ -1,37 +1,67 @@
 package fly.metals.impl.items;
 
 import fly.newmod.NewMod;
+import fly.newmod.api.item.ItemManager;
+import fly.newmod.api.item.ModItemStack;
+import fly.newmod.api.item.type.ModItemType;
 import fly.newmod.bases.ModItem;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.plugin.Plugin;
 
-public class MetalNugget extends ModItem {
+public class MetalNugget extends ModItemType {
     private ItemStack metal;
 
-    public MetalNugget(Material material, String name, int color, String id, ItemStack metal) {
-        super(material, name, color, id);
+    public static MetalNugget createAndRegister(Material material, Plugin plugin, String id, String name, int color, ItemStack metal) {
+        ItemManager manager = NewMod.get().getItemManager();
+        MetalNugget item = (MetalNugget) new MetalNugget(material, new NamespacedKey(plugin, id), metal).name(name, color);
+
+        manager.registerItem(item);
+
+        return item;
+    }
+
+    public static MetalNugget createAndRegister(Material material, Plugin plugin, String id, String name, int color, ModItemType metal) {
+        ItemManager manager = NewMod.get().getItemManager();
+        MetalNugget item = (MetalNugget) new MetalNugget(material, new NamespacedKey(plugin, id), metal).name(name, color);
+
+        manager.registerItem(item);
+
+        return item;
+    }
+
+    public MetalNugget(Material material, NamespacedKey id, ItemStack metal) {
+        super(material, id);
+
+        ItemManager manager = NewMod.get().getItemManager();
 
         this.metal = metal;
 
-        ItemStack result = new ItemStack(this);
+        ItemStack nugget = new ModItemStack(this).create();
 
-        result.setAmount(9);
+        nugget.setAmount(9);
 
-        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(NewMod.get(), id), result);
+        ShapelessRecipe recipe = new ShapelessRecipe(id, nugget);
 
         recipe.addIngredient(metal);
 
-        addRecipe(recipe);
+        Bukkit.addRecipe(recipe);
 
 
-        ShapelessRecipe recipeReverse = new ShapelessRecipe(new NamespacedKey(NewMod.get(), id + "_reverse"), metal);
+        @SuppressWarnings("deprecation")
+        ShapelessRecipe recipeReverse = new ShapelessRecipe(new NamespacedKey(id.getNamespace(), id.getKey() + "_reverse"), metal);
 
-        recipeReverse.addIngredient(9, this);
+        recipeReverse.addIngredient(9, new ModItemStack(this).create());
 
-        addRecipe(recipeReverse);
+        Bukkit.addRecipe(recipeReverse);
+    }
+
+    public MetalNugget(Material material, NamespacedKey id, ModItemType metal) {
+        this(material, id, new ModItemStack(metal).create());
     }
 
     public ItemStack getMetal() {
