@@ -17,18 +17,19 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class FilledOreSpongeMeta extends ModItemMeta.AbstractModItemMeta {
     public static final NamespacedKey ORE = new NamespacedKey(MetalsPlugin.get(), "ore");
-
-    static {
-        new FilledOreSpongeMetaSerializer();
-    }
 
     private Material material;
 
     protected FilledOreSpongeMeta(ModItemType type, Material material) {
         super(type);
+
+        //System.out.println(material);
+
+        //new RuntimeException().printStackTrace();
 
         this.material = material;
     }
@@ -44,6 +45,24 @@ public class FilledOreSpongeMeta extends ModItemMeta.AbstractModItemMeta {
     @Override
     public FilledOreSpongeMeta cloneItem() {
         return new FilledOreSpongeMeta(getType(), material);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        FilledOreSpongeMeta that = (FilledOreSpongeMeta) o;
+        return material == that.material && getType().equals(that.getType());
+    }
+
+    @Override
+    public boolean isAcceptable(ModItemMeta modItemMeta) {
+        if(!(modItemMeta instanceof FilledOreSpongeMeta)) {
+            return false;
+        }
+
+        return (modItemMeta.getType() == getType() || getType().equals(modItemMeta.getType())) && ((FilledOreSpongeMeta) modItemMeta).material == material;
     }
 
     public static class FilledOreSpongeMetaSerializer extends ModItemMetaSerializer<FilledOreSpongeMeta> {

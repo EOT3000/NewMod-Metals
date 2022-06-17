@@ -1,7 +1,10 @@
 package fly.metals;
 
+import fly.metals.impl.items.FilledOreSponge;
+import fly.metals.impl.items.meta.FilledOreSpongeMeta;
 import fly.metals.setup.MetalsAddonSetup;
 import fly.newmod.NewMod;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -30,7 +33,14 @@ public class MetalsPlugin extends NewMod.ModExtension {
 
     @Override
     public void load() {
+        new FilledOreSpongeMeta.FilledOreSpongeMetaSerializer();
+
         MetalsAddonSetup.init();
+    }
+
+    @Override
+    public void onEnable() {
+        Bukkit.getPluginManager().registerEvents(new FilledOreSponge.SpongeListener(), this);
     }
 
     @EventHandler

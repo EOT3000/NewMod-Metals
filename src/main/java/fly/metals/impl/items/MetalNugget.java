@@ -4,8 +4,6 @@ import fly.newmod.NewMod;
 import fly.newmod.api.item.ItemManager;
 import fly.newmod.api.item.ModItemStack;
 import fly.newmod.api.item.type.ModItemType;
-import fly.newmod.bases.ModItem;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,6 +20,8 @@ public class MetalNugget extends ModItemType {
 
         manager.registerItem(item);
 
+        item.addRecipes();
+
         return item;
     }
 
@@ -31,16 +31,18 @@ public class MetalNugget extends ModItemType {
 
         manager.registerItem(item);
 
+        item.addRecipes();
+
         return item;
     }
 
     public MetalNugget(Material material, NamespacedKey id, ItemStack metal) {
         super(material, id);
 
-        ItemManager manager = NewMod.get().getItemManager();
-
         this.metal = metal;
+    }
 
+    private void addRecipes() {
         ItemStack nugget = new ModItemStack(this).create();
 
         nugget.setAmount(9);

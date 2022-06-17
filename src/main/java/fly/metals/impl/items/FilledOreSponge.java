@@ -8,11 +8,9 @@ import fly.newmod.NewMod;
 import fly.newmod.api.block.BlockManager;
 import fly.newmod.api.item.ItemManager;
 import fly.newmod.api.item.ModItemStack;
+import fly.newmod.api.item.texture.DefaultMetaFlags;
+import fly.newmod.api.item.texture.MetaModifier;
 import fly.newmod.api.item.type.ModItemType;
-import fly.newmod.bases.textures.Texture;
-import fly.newmod.setup.BlockStorage;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,10 +21,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.inventory.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.PLAYER_HEAD;
 
 public class FilledOreSponge extends ModItemType {
@@ -36,15 +34,29 @@ public class FilledOreSponge extends ModItemType {
         super(PLAYER_HEAD, new NamespacedKey(MetalsPlugin.get(), "filled_ore_sponge"), FilledOreSpongeMeta.class);
 
         name("Filled Ore Sponge", 0x7d5e36);
-        Bukkit.getPluginManager().registerEvents(new SpongeListener(), NewMod.get());
+        addModifier(new MetaModifier<>(MetalTextures.FILLED_ORE_SPONGE.getRawTexture(), DefaultMetaFlags.SKULL_MODIFIER));
+
+        NewMod.get().getItemManager().registerItem(this);
+
+        addVariant(AIR, "errored");
     }
 
     public void addVariant(Material ore, String name) {
         VARIANTS.put(ore, name);
 
-        ItemStack stack = new ModItemStack(this).create();
+        ModItemStack modStack = new ModItemStack(this);
+
+        FilledOreSpongeMeta meta = (FilledOreSpongeMeta) modStack.getMeta();
+
+        meta.setMaterial(ore);
+
+        modStack.setMeta(meta);
+
+        ItemStack stack = modStack.create();
 
         stack.setAmount(8);
+
+        stack.getItemMeta();
 
         @SuppressWarnings("deprecation")
         ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(getId().getNamespace(), getId().getKey() + "_" + ore.name().toLowerCase()), stack);
@@ -59,7 +71,9 @@ public class FilledOreSponge extends ModItemType {
         @SuppressWarnings("deprecation")
         NamespacedKey nk = new NamespacedKey(getId().getNamespace(), getId().getKey() + "_" + ore.name().toLowerCase() + "_furnace");
 
-        BlastingRecipe furnaceRecipe = new BlastingRecipe(nk, new ModItemStack(MetalsAddonSetup.HARD_CARBON_CHUNK).create(), new RecipeChoice.ExactChoice(new ModItemStack(this).create()), 2.0f, 600);
+        System.out.println(nk);
+
+        BlastingRecipe furnaceRecipe = new BlastingRecipe(nk, new ModItemStack(MetalsAddonSetup.HARD_CARBON_CHUNK).create(), new RecipeChoice.ExactChoice(modStack.create()), 2.0f, 600);
 
         Bukkit.addRecipe(furnaceRecipe);
     }
@@ -68,14 +82,14 @@ public class FilledOreSponge extends ModItemType {
         return VARIANTS.get(ore);
     }
 
-    private static class SpongeListener implements Listener {
+    public static class SpongeListener implements Listener {
         @EventHandler
         public void onFurnaceSmelt(FurnaceSmeltEvent event) {
             Location l = event.getBlock().getLocation().add(0, -1, 0);
             BlockManager bs = NewMod.get().getBlockManager();
             ItemManager is = NewMod.get().getItemManager();
 
-            if (is.getType(event.getResult()).equals(MetalsAddonSetup.HARD_CARBON_CHUNK) && bs.getData(l, "id").equals("collector")) {
+            if (is.getType(event.getResult()).equals(MetalsAddonSetup.HARD_CARBON_CHUNK) && bs.getType(l.getBlock()).equals(MetalsAddonSetup.COLLECTOR.getBlock())) {
                 ModItemStack stack = new ModItemStack(((RecipeChoice.ExactChoice) event.getRecipe().getInputChoice()).getItemStack());
                 FilledOreSpongeMeta sponge = (FilledOreSpongeMeta) stack.getMeta();
 
