@@ -66,12 +66,12 @@ public class MetalsAddonSetup {
             BigDecimal d = new BigDecimal("0");
 
             for(String metalKey : oreData.getKeys(false)) {
-                if(metalKey.equals("ITEM")) {
+                if (metalKey.equals("ITEM")) {
                     BASE_FILLED_ORE_SPONGE.addVariant(Material.valueOf(oreKey), oreData.getString("NAME"));
                     continue;
                 }
 
-                if(metalKey.equals("NAME")) {
+                if (metalKey.equals("NAME")) {
                     continue;
                 }
 
@@ -84,14 +84,30 @@ public class MetalsAddonSetup {
 
                 d = d.add(bigMetalData);
 
-                if(!metalKey.contains(":")) {
+                if (!metalKey.contains(":")) {
+                    oreMap.get(Material.valueOf(oreKey)).put(null, bigMetalData);
+                } else {
+                    String namespace = metalKey.split(":")[0];
+                    String name = metalKey.split(":")[1];
 
+                    if (namespace.equalsIgnoreCase("METALSMODULE")) {
+                        ModItemType type = manager.getType(new NamespacedKey(MetalsPlugin.get(), name));
+
+                        if(type == null) {
+                            System.err.println("Error on init of " + oreKey + ", no such metal name " + name + " (" + metalKey + ")");
+                        }
+
+                        oreMap.get(Material.valueOf(oreKey)).put(new ModItemStack(type).create(), bigMetalData);
+                    } else if (namespace.equalsIgnoreCase("MINECRAFT")) {
+                        try {
+                            oreMap.get(Material.valueOf(oreKey)).put(new ItemStack(Material.valueOf(name)), bigMetalData);
+                        } catch (Exception e) {
+                            System.err.println("Error on init of " + oreKey + ", exception " + e.getMessage() + " (" + metalKey + ")");
+                        }
+                    } else {
+                        System.err.println("Error on init of " + oreKey + ", no such namespace " + namespace + " (" + metalKey + ")");
+                    }
                 }
-                String namespace = metalKey.split(":")[0];
-                String name = metalKey.split(":")[1];
-
-                if(namespace.equalsIgnoreCase(""))
-                oreMap.get(Material.valueOf(oreKey)).put(new ModItemStack(manager.getType(new NamespacedKey(MetalsPlugin.get(), metalKey))).create(), bigMetalData);
             }
 
             if(!d.equals(new BigDecimal("1"))) {
