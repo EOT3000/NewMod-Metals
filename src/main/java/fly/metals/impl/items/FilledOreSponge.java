@@ -89,7 +89,7 @@ public class FilledOreSponge extends ModItemType {
             BlockManager bs = NewMod.get().getBlockManager();
             ItemManager is = NewMod.get().getItemManager();
 
-            if (is.getType(event.getResult()).equals(MetalsAddonSetup.HARD_CARBON_CHUNK) && bs.getType(l.getBlock()).equals(MetalsAddonSetup.COLLECTOR.getBlock())) {
+            if (is.getType(event.getResult()) == MetalsAddonSetup.HARD_CARBON_CHUNK && bs.getType(l.getBlock()) == MetalsAddonSetup.COLLECTOR.getBlock()) {
                 ModItemStack stack = new ModItemStack(((RecipeChoice.ExactChoice) event.getRecipe().getInputChoice()).getItemStack());
                 FilledOreSpongeMeta sponge = (FilledOreSpongeMeta) stack.getMeta();
 

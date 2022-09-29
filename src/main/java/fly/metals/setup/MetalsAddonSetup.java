@@ -191,4 +191,12 @@ public class MetalsAddonSetup {
 
     public static final ModItemType SALT = ModItemType.createAndRegister(SUGAR, MetalsPlugin.get(), "salt", "Salt", 0xCCCCCC)
             .shapelessRecipe(2, new ModItemStack(SODIUM_NUGGET).create(), new ModItemStack(SODIUM_NUGGET).create(), new ModItemStack(SODIUM_NUGGET).create(), new ItemStack(SUGAR));
+
+
+    public static final ModItemType BORRO_NEODYMIUM_POWDER = ModItemType.createAndRegister(GUNPOWDER, MetalsPlugin.get(), "borro_neodymium_powder", "Borro-Neodymium Powder", 0xE4E2CF)
+            .shapelessRecipe(7, TITANIUM_INGOT.create(), BORON_PIECE.create(), BORON_PIECE.create(), NEODYMIUM_INGOT.create(), SILICON_INGOT.create(), SILICON_INGOT.create(), SILICON_INGOT.create());
+
+    public static final ModItemType BORRO_NEODYMIUM_INGOT = ModItemType.createAndRegister(IRON_INGOT, MetalsPlugin.get(), "borro_neodymium_ingot", "Borro-Neodymium Ingot", 0xE4E2CF)
+            .furnaceRecipe(BORRO_NEODYMIUM_POWDER.create(), 2, 90)
+            .blastingRecipe(BORRO_NEODYMIUM_POWDER.create(), 3, 45);
 }
